@@ -1,5 +1,6 @@
 package es.claro.persistence;
 
+import java.util.logging.Logger;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 
@@ -8,9 +9,10 @@ import javax.persistence.Persistence;
  * @author puche
  */
 public class PersistenceManager {
- 
-  public static final boolean DEBUG = true;
-  public static final String PERSISTENCE_UNIT = "TercerosPU";
+
+  private static final Logger log = Logger.getLogger("es.claro.persistence");
+  protected static final String DEFAULT_PERSISTENCE_UNIT = "DefaultPU";
+  private static String persistenceUnit = null;
   
   private static final PersistenceManager singleton = 
           new ScopedPersistenceManager(); // for request scope (lazy close) (requiere declarar request listener)
@@ -30,9 +32,7 @@ public class PersistenceManager {
     
     if (emf == null) {
       emf = createEntityManagerFactory();
-      if (DEBUG)
-        System.out.println(
-              "\n*** Persistencia Inicializada " + new java.util.Date());
+      log.info("Persistence Manager has been initialized");
     }
     return emf;
   }
@@ -42,14 +42,33 @@ public class PersistenceManager {
     if (emf != null) {
       emf.close();
       emf = null;
-      if (DEBUG)
-        System.out.println(
-            "\n*** Persistencia Finalizada " + new java.util.Date());
+      log.info("Persistence Manager has been closed");
     }
   }
   
   protected EntityManagerFactory createEntityManagerFactory() {
     
-    return Persistence.createEntityManagerFactory(PERSISTENCE_UNIT);
+    return Persistence.createEntityManagerFactory(persistenceUnit);
+  }
+  
+  /**
+   * @return The name of the persistence unit that will be used when the
+   * entity manager factory is created.
+   */
+  public static String getPersistenceUnit() {
+    
+    return persistenceUnit;
+  }
+  
+  /**
+   * Sets the name of the persistence unit that will be used when the
+   * entity manager factory is created.
+   * 
+   * @param persistenceUnit Name of one persistence unit defined
+   * in persistence.xml
+   */
+  public static void setPersistenceUnit(String persistenceUnit) {
+    
+    PersistenceManager.persistenceUnit = persistenceUnit;
   }
 }
